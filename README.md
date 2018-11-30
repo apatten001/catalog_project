@@ -12,8 +12,7 @@ class category.
 
 3. Each **class**(item) will have a link to the description of the the class chosen
 
-4. If a user is authenticated and logged in, then they will be able to do CRUD(Create, Read, Update, and Delete) operations
+4. If a user **is authenticated** and logged in, then they will be able to do CRUD(Create, Read, Update, and Delete) operations
 to the class Categories as well as the class items
 
-5. There will also be API endpoints for each of the categories and class items
-
+5. There will also be **API endpoints** for each of the categories and class items
