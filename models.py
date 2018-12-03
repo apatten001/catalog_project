@@ -47,6 +47,8 @@ class ClassName(Base):
     description = Column(Text(), nullable=False)
     category_id = Column(Integer(), ForeignKey('category.id'))
     category = relationship(Category)
+    user_id = Column(Integer(), ForeignKey('user.id'))
+    user = relationship(User)
 
 
 engine = create_engine('sqlite:///catalog.db')
