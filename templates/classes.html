@@ -1,0 +1,6 @@
+<h1>{{category.category_name}} Classes</h1>
+
+
+{% for class in classes %}
+<a href="{{url_for('class_description', category_id=category_id, class_id=class.id)}}">{{class.class_name}}<small>({{class.category.category_name}})</small></a><br/>
+{% endfor %}
