@@ -1,0 +1,12 @@
+<h1>Are you sure you would like to delete "{{item.class_name}}"</h1>
+
+<form action="#" method = 'POST'>
+
+	<button type="submit" class="btn btn-default delete" id="submit" type="submit">
+	<span class="glyphicon glyphicon-trash" aria-hidden="true"></span>Delete</button>
+	<a href = "{{url_for('class_list', category_id=category_id)}}">
+		<button class="btn btn-default delete">
+		<span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Cancel</button>
+	</a>
+
+</form>
