@@ -49,14 +49,14 @@ class ClassName(Base):
     category = relationship(Category)
     user_id = Column(Integer(), ForeignKey('user.id'))
     user = relationship(User)
-    
+
+    @property
     def serialize(self):
         return {
             'id': self.id,
             'class_name': self.class_name,
-            'description':self.description,
-            'category': self.category,
-            
+            'description': self.description,
+
         }
 
 
