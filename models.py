@@ -2,17 +2,26 @@ from sqlalchemy import String, Integer, Column, ForeignKey, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy import create_engine
-
+from passlib.apps import custom_app_context as pwd_context
 
 Base = declarative_base()
 
 
 class User(Base):
-    __tablename__ =  'user'
+    __tablename__ = 'user'
 
     id = Column(Integer(), primary_key=True)
     name = Column(String(64), nullable=False)
     email = Column(String(250), nullable=False)
+    hash_password = Column(String(64))
+    
+    def password_hash(self, password):
+        self.hash_password = pwd_context.hash(password)
+        
+    def verify_password(self, password):
+        return pwd_context.verify(password, self.hash_password)
+        
+        
     
     @property
     def serialize(self):
@@ -56,6 +65,7 @@ class ClassName(Base):
             'id': self.id,
             'class_name': self.class_name,
             'description': self.description,
+            'category': self.category.category_name,
 
         }
 
