@@ -2,5 +2,5 @@
 
 
 {% for class in classes %}
-<a href="{{url_for('class_description', category_id=category_id, class_id=class.id)}}">{{class.class_name}}<small>({{class.category.category_name}})</small></a><br/>
+<a href="{{url_for('class_description', category_name=category.category_name, class_id=class.id)}}">{{class.class_name}}<small>({{class.category.category_name}})</small></a><br/>
 {% endfor %}
