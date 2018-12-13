@@ -1,6 +1,17 @@
 {% for category in categories %}
 
-<a href="{{url_for('class_list', category_id=category.id)}}">{{category.category_name}}<br/></a>
+<a href="{{url_for('class_list', category_name=category.category_name)}}">{{category.category_name}}<br/></a>
+
 
 {% endfor%}
+<a href="{{url_for('add_category')}}">Add Category</a>
+<a href="{{url_for('delete_category', category_name=category_name)}}">Delete Category</a>
+
+
+<hr>
+
+{% for class in classes %}
+{{class.class_name}} ({{class.category.category_name}})<br/>
+
+{% endfor %}
 
