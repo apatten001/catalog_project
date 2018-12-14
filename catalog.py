@@ -1,4 +1,3 @@
-
 from flask import Flask, url_for, render_template, jsonify, request, redirect, flash
 from models import Category, ClassName, Base, User
 from sqlalchemy import create_engine
@@ -47,7 +46,7 @@ def gconnect():
         credentials = oauth_flow.step2_exchange(code)
     except FlowExchangeError:
         response = make_response(json.dumps('Failed to upgrade authorization code'), 401)
-        reaponse.headers['Content-type'] = 'application/json'
+        response.headers['Content-type'] = 'application/json'
         return response
     # Check that the access token is valid.
     access_token = credentials.access_token
@@ -129,13 +128,12 @@ def gdisconnect():
         response.headers['Content-Type'] = 'application/json'
         return response
     print('In gdisconnect access token is %s', access_token)
-    print('User name is: ')
-    print(login_session['username'])
+    print('User name is: ', login_session['username'])
     url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % login_session['access_token']
     h = httplib2.Http()
     result = h.request(url, 'GET')[0]
     print('result is ')
-    print (result)
+    print(result)
     if result['status'] == '200':
         del login_session['access_token']
         del login_session['gplus_id']
@@ -172,7 +170,7 @@ def category_list():
     # return 'a list of all categories to choose from as well as latest items added'
     categories = session.query(Category).all()
     classes = session.query(ClassName).order_by('-id')[:5]
-    return render_template('categories.html', categories=categories, classes=classes)
+    return render_template('index.html', categories=categories, classes=classes)
 
 
 @app.route('/category/new', methods=['GET', 'POST'])
@@ -187,20 +185,6 @@ def add_category():
         return redirect(url_for('category_list'))
     else:
         return render_template('addcategory.html')
-
-
-@app.route('/category/<category_name>/delete')
-def delete_category(category_name):
-    if 'username' not in login_session:
-        return redirect(url_for('show_login'))
-    if request.method == "POST":
-        del_category = session.query(Category).filter_by(category_name=category_name)
-        session.delete(del_category)
-        flash('Your category has been successfully deleted.')
-        session.commit()
-        return redirect(url_for('category_list'))
-    else:
-        return render_template('deletecategory.html', category_name=category_name)
 
 
 # return 'list of all the classes in the catalog category'
@@ -232,11 +216,11 @@ def add_class(category_name):
         return render_template('addclass.html',  category=category)
 
 
-@app.route('/categories/<int:category_id>/<int:class_id>/edit', methods=['GET', 'POST'])
-def edit_class(category_id, class_id):
+@app.route('/categories/<category_name>/<int:class_id>/edit', methods=['GET', 'POST'])
+def edit_class(category_name, class_id):
     edited_class = session.query(ClassName).filter_by(id=class_id).one()
-    category = session.query(Category).filter_by(id=category_id).one()
-    classes = session.query(ClassName).filter_by(category_id=category_id).all()
+    category = session.query(Category).filter_by(category_name=category_name).one()
+    classes = session.query(ClassName).filter_by(category_id=category.id).all()
     if 'username' not in login_session:
         return redirect(url_for('show_login'))
     if request.method == 'POST':
@@ -246,22 +230,22 @@ def edit_class(category_id, class_id):
             edited_class.description = request.form['description']
         session.add(edited_class)
         session.commit()
-        return redirect(url_for('class_list', category_id=category_id))
+        return redirect(url_for('class_list', category_name=category_name))
     # return 'list of all the classes in the catalog category'
     else:
         return render_template('editclass.html',  category=category, classes=classes, edit=edited_class)
 
 
-@app.route('/categories/<int:category_id>/<int:class_id>/delete', methods=['GET', 'POST'])
-def delete_class(category_id, class_id):
-    category = session.query(Category).filter_by(id=category_id).one()
+@app.route('/categories/<category_name>/<int:class_id>/delete', methods=['GET', 'POST'])
+def delete_class(category_name, class_id):
+    category = session.query(Category).filter_by(category_name=category_name).one()
     del_class = session.query(ClassName).filter_by(id=class_id).one()
     if 'username' not in login_session:
         return redirect(url_for('show_login'))
     if request.method == 'POST':
         session.delete(del_class)
         session.commit()
-        return redirect(url_for('class_list', category_id=category_id))
+        return redirect(url_for('class_list', category_name=category_name))
     else:
         return render_template('deleteclass.html',  category=category, item=del_class)
 
