@@ -12,7 +12,8 @@ import json
 import string
 import random
 import requests
-
+from flask_httpauth import HTTPBasicAuth
+auth = HTTPBasicAuth()
 
 engine = create_engine('sqlite:///catalog.db')
 Base.metadata.bind = engine
@@ -121,7 +122,8 @@ def gconnect():
 # logout connected google account holder
 @app.route('/gdisconnect')
 def gdisconnect():
-    access_token = login_session.get('access_token')
+    access_token = login_session['access_token']
+    print(access_token)
     if access_token is None:
         print('Access Token is None')
         response = make_response(json.dumps('Current user not connected.'), 401)
@@ -129,7 +131,7 @@ def gdisconnect():
         return response
     print('In gdisconnect access token is %s', access_token)
     print('User name is: ', login_session['username'])
-    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % login_session['access_token']
+    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % access_token
     h = httplib2.Http()
     result = h.request(url, 'GET')[0]
     print('result is ')
@@ -144,24 +146,16 @@ def gdisconnect():
         response.headers['Content-Type'] = 'application/json'
         return response
     else:
-        response = make_response(json.dumps('Failed to revoke token for given user.', 400))
+        response = make_response(json.dumps('Failed to revoke token for given user.'), 400)
         response.headers['Content-Type'] = 'application/json'
         return response
-
-
-@app.route('/fbconnect', methods=['POST'])
-def fbconnect():
-    if request.args.get('state') != login_session['state']:
-        response = make_response(json.dumps('Invalid State parameter'), 401)
-        response.headers['Content-type'] = 'application/json'
-        return response
-    access_token = request.data
 
 
 # return 'the home page'
 @app.route('/')
 @app.route('/home')
 def home():
+    print(login_session['access_token'])
     return render_template('home.html')
 
 
@@ -200,6 +194,7 @@ def class_list(category_name):
 
 
 @app.route('/categories/<category_name>/new', methods=['GET', 'POST'])
+@auth.login_required
 def add_class(category_name):
     category = session.query(Category).filter_by(category_name=category_name).one()
     if 'username' not in login_session:
@@ -217,6 +212,7 @@ def add_class(category_name):
 
 
 @app.route('/categories/<category_name>/<int:class_id>/edit', methods=['GET', 'POST'])
+@auth.login_required
 def edit_class(category_name, class_id):
     edited_class = session.query(ClassName).filter_by(id=class_id).one()
     category = session.query(Category).filter_by(category_name=category_name).one()
@@ -237,6 +233,7 @@ def edit_class(category_name, class_id):
 
 
 @app.route('/categories/<category_name>/<int:class_id>/delete', methods=['GET', 'POST'])
+@auth.login_required
 def delete_class(category_name, class_id):
     category = session.query(Category).filter_by(category_name=category_name).one()
     del_class = session.query(ClassName).filter_by(id=class_id).one()
@@ -256,6 +253,9 @@ def class_description(category_name, class_id):
     category = session.query(Category).filter_by(category_name=category_name).one()
     item = session.query(ClassName).filter_by(id=class_id).one()
     creator = get_user_info(item.user_id)
+    print(creator)
+    if 'username' not in login_session:
+        return render_template('publicclassdescription.html', category=category, item=item, creator=creator)
     return render_template('class_description.html', category=category, item=item, creator=creator)
 
 
