@@ -1,0 +1,20 @@
+<nav class="navbar navbar-light navbar-expand-md">
+            <div class="container-fluid"><a class="navbar-brand" href="/categories">Class Catalog</a>
+                <button class="navbar-toggler" data-toggle="collapse" data-target="#navcol-1">
+                    <span class="sr-only">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
+                <div class="collapse navbar-collapse justify-content-end"
+                    id="navcol-1">
+                    <ul class="nav navbar-nav">
+                        {% if login_session %}
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link align-end" href="{{ url_for('gdisconnect') }}">Logout</a></li>
+                            {% else %}
+                            <li class="nav-item" role="presentation">
+                            <a class="nav-link align-end" href="{{ url_for('show_login') }}">Login</a></li>
+                            {% endif %}
+
+{#                        <li class="nav-item" role="presentation"><a class="nav-link" href="#">Second Item</a></li>#}
+                    </ul>
+                </div>
+            </div>
+</nav>
