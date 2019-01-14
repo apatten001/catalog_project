@@ -22,7 +22,6 @@ session = DBSession()
 
 app = Flask(__name__)
 
-
 CLIENT_ID = json.loads(open('client_secret_catalog.json', 'r').read())['web']['client_id']
 
 
@@ -155,7 +154,6 @@ def gdisconnect():
 @app.route('/')
 @app.route('/home')
 def home():
-    print(login_session['access_token'])
     return render_template('home.html')
 
 
@@ -167,6 +165,7 @@ def category_list():
     return render_template('index.html', categories=categories, classes=classes)
 
 
+# function to add a category to database
 @app.route('/category/new', methods=['GET', 'POST'])
 def add_category():
     if 'username' not in login_session:
@@ -193,8 +192,8 @@ def class_list(category_name):
         return render_template('classes.html',  category=category, classes=classes)
 
 
+# function to add a class to database
 @app.route('/categories/<category_name>/new', methods=['GET', 'POST'])
-@auth.login_required
 def add_class(category_name):
     category = session.query(Category).filter_by(category_name=category_name).one()
     if 'username' not in login_session:
@@ -211,8 +210,8 @@ def add_class(category_name):
         return render_template('addclass.html',  category=category)
 
 
+# allows edit class functionality to logged in users
 @app.route('/categories/<category_name>/<int:class_id>/edit', methods=['GET', 'POST'])
-@auth.login_required
 def edit_class(category_name, class_id):
     edited_class = session.query(ClassName).filter_by(id=class_id).one()
     category = session.query(Category).filter_by(category_name=category_name).one()
@@ -232,8 +231,8 @@ def edit_class(category_name, class_id):
         return render_template('editclass.html',  category=category, classes=classes, edit=edited_class)
 
 
+# allows delete class functionality to logged in users
 @app.route('/categories/<category_name>/<int:class_id>/delete', methods=['GET', 'POST'])
-@auth.login_required
 def delete_class(category_name, class_id):
     category = session.query(Category).filter_by(category_name=category_name).one()
     del_class = session.query(ClassName).filter_by(id=class_id).one()
@@ -247,6 +246,7 @@ def delete_class(category_name, class_id):
         return render_template('deleteclass.html',  category=category, item=del_class)
 
 
+# displays the description of specified class
 @app.route('/categories/<category_name>/<int:class_id>')
 def class_description(category_name, class_id):
 
@@ -260,26 +260,27 @@ def class_description(category_name, class_id):
 
 
 # API endpoints for classes and categories
-@app.route('/categories/JSON')
+@app.route('api/v1/categories/JSON')
 def category_listJOSN():
     # return 'a list of all categories to choose from'
     categories = session.query(Category).all()
     return jsonify(categories=[i.serialize for i in categories])
 
 
-@app.route('/categories/<int:category_id>/JSON')
+@app.route('api/v1/categories/<int:category_id>/JSON')
 def class_listJSON(category_id):
     category = session.query(Category).filter_by(id=category_id).one()
     classes = session.query(ClassName).filter_by(category_id=category_id).all()
     return jsonify(Classes=[i.serialize for i in classes])
 
 
-@app.route('/categories/classes/JSON')
+@app.route('api/v1/categories/classes/JSON')
 def all_classJSON():
     classes=session.query(ClassName).all()
     return jsonify(Classes=[i.serialize for i in classes])
 
 
+# function that creates users
 def create_user(login_session):
     new_user = User(name=login_session['username'], email=login_session["email"], picture=login_session['picture'])
     session.add(new_user)
