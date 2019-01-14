@@ -43,7 +43,7 @@ to the class Categories as well as the class items
  * Run ```vagrant up``` to get the machine running then run ```vagrant ssh``` to login to your virtual machine
  * pre populate the database by running ```python category.py```
  * Then run the application with ```python catalog.py``` command
- * goto http://localhost:5000/categories to access the app
+ * goto http://localhost:5000/ to access the app
  
  
  ## JSON Endpoints
