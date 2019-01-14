@@ -260,21 +260,21 @@ def class_description(category_name, class_id):
 
 
 # API endpoints for classes and categories
-@app.route('api/v1/categories/JSON')
+@app.route('/api/v1/categories/JSON')
 def category_listJOSN():
     # return 'a list of all categories to choose from'
     categories = session.query(Category).all()
     return jsonify(categories=[i.serialize for i in categories])
 
 
-@app.route('api/v1/categories/<int:category_id>/JSON')
+@app.route('/api/v1/categories/<int:category_id>/JSON')
 def class_listJSON(category_id):
     category = session.query(Category).filter_by(id=category_id).one()
     classes = session.query(ClassName).filter_by(category_id=category_id).all()
     return jsonify(Classes=[i.serialize for i in classes])
 
 
-@app.route('api/v1/categories/classes/JSON')
+@app.route('/api/v1/categories/classes/JSON')
 def all_classJSON():
     classes=session.query(ClassName).all()
     return jsonify(Classes=[i.serialize for i in classes])
