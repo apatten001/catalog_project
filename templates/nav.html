@@ -8,13 +8,24 @@
                         {% if login_session %}
                         <li class="nav-item" role="presentation">
                             <a class="nav-link align-end" href="{{ url_for('gdisconnect') }}">Logout</a></li>
-                            {% else %}
+                        {% else %}
                             <li class="nav-item" role="presentation">
                             <a class="nav-link align-end" href="{{ url_for('show_login') }}">Login</a></li>
-                            {% endif %}
+                        {% endif %}
 
 {#                        <li class="nav-item" role="presentation"><a class="nav-link" href="#">Second Item</a></li>#}
                     </ul>
                 </div>
             </div>
 </nav>
+<div class = 'flash'>
+                        {% with messages = get_flashed_messages() %}
+                            {% if messages %}
+                                {% for  message in messages %}
+                                    <div class="alert-success">
+                                        {{message}}
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+</div>
