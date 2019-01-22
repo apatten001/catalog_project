@@ -86,7 +86,8 @@ def gconnect():
     stored_access_token = login_session.get('access_token')
     stored_gplus_id = login_session.get('gplus_id')
     if stored_access_token is not None and gplus_id == stored_gplus_id:
-        response = make_response(json.dumps('Current user is already connected.'),
+        response = make_response(json.dumps(
+            'Current user is already connected.'),
                                  200)
         response.headers['Content-Type'] = 'application/json'
         return response
@@ -118,8 +119,9 @@ def gconnect():
     output += '!</h1>'
     output += '<img src="'
     output += login_session['picture']
-    output += ' " style = "width: 300px; height: 300px;border-radius:' \
-              ' 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+    output += ' " style = "width: 300px; height: 300px;' \
+        'border-radius: 150px;-webkit-border-radius: 150px;'\
+        '-moz-border-radius: 150px;"> '
     flash("you are now logged in as %s" % login_session['username'])
     print("done!")
     return output
@@ -170,10 +172,13 @@ def home():
 
 @app.route('/categories')
 def category_list():
-    # return 'a list of all categories to choose from as well as latest items added'
+    # return 'a list of all categories to
+    # choose from as well as latest items added'
     categories = session.query(Category).all()
     classes = session.query(ClassName).order_by('-id')[:5]
-    return render_template('index.html', categories=categories, classes=classes)
+    return render_template(
+        'index.html', categories=categories,
+        classes=classes)
 
 
 # function to add a category to database
@@ -283,8 +288,10 @@ def class_description(category_name, class_id):
     creator = get_user_info(item.user_id)
     print(creator)
     if 'username' not in login_session:
-        return render_template('publicclassdescription.html', category=category,
-                               item=item, creator=creator)
+        return render_template(
+            'publicclassdescription.html',
+            category=category,
+            item=item, creator=creator)
     return render_template('class_description.html',
                            category=category, item=item, creator=creator)
 
@@ -306,7 +313,7 @@ def class_listJSON(category_id):
 
 @app.route('/api/v1/categories/classes/JSON')
 def all_classJSON():
-    classes=session.query(ClassName).all()
+    classes = session.query(ClassName).all()
     return jsonify(Classes=[i.serialize for i in classes])
 
 
@@ -339,4 +346,6 @@ if __name__ == '__main__':
     app.secret_key = 'secretKey'
     app.debug = True
     app.run(host='0.0.0.0', port=5000)
+
+
 
