@@ -1,4 +1,5 @@
-from flask import Flask, url_for, render_template, jsonify, request, redirect, flash
+from flask import (Flask, url_for, render_template,
+                   jsonify, request, redirect, flash)
 from models import Category, ClassName, Base, User
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -22,12 +23,14 @@ session = DBSession()
 
 app = Flask(__name__)
 
-CLIENT_ID = json.loads(open('client_secret_catalog.json', 'r').read())['web']['client_id']
+CLIENT_ID = json.loads(open('client_secret_catalog.json',
+                            'r').read())['web']['client_id']
 
 
 @app.route('/login')
 def show_login():
-    state = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(32))
+    state = ''.join(random.choice(string.ascii_uppercase + string.digits)
+                    for x in range(32))
     login_session['state'] = state
     return render_template('login.html', STATE=state)
 
@@ -36,16 +39,19 @@ def show_login():
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
     if request.args.get('state') != login_session['state']:
-        response = make_response(json.dumps('Invalid state parameters'), 401)
+        response = make_response(
+            json.dumps('Invalid state parameters'), 401)
         response.headers['Content-type'] = 'application/json'
         return response
     code = request.data
     try:
-        oauth_flow = flow_from_clientsecrets('client_secret_catalog.json', scope='')
+        oauth_flow = flow_from_clientsecrets(
+            'client_secret_catalog.json', scope='')
         oauth_flow.redirect_uri = 'postmessage'
         credentials = oauth_flow.step2_exchange(code)
     except FlowExchangeError:
-        response = make_response(json.dumps('Failed to upgrade authorization code'), 401)
+        response = make_response(json.dumps(
+            'Failed to upgrade authorization code'), 401)
         response.headers['Content-type'] = 'application/json'
         return response
     # Check that the access token is valid.
@@ -56,7 +62,8 @@ def gconnect():
     result = json.loads(h.request(url, 'GET')[1])
     # If there was an error in the access token info, abort.
     if result.get('error') is not None:
-        response = make_response(json.dumps(result.get('error')), 500)
+        response = make_response(json.dumps(
+            result.get('error')), 500)
         response.headers['Content-Type'] = 'application/json'
         return response
 
@@ -125,12 +132,14 @@ def gdisconnect():
     print(access_token)
     if access_token is None:
         print('Access Token is None')
-        response = make_response(json.dumps('Current user not connected.'), 401)
+        response = make_response(json.dumps(
+            'Current user not connected.'), 401)
         response.headers['Content-Type'] = 'application/json'
         return response
     print('In gdisconnect access token is %s', access_token)
     print('User name is: ', login_session['username'])
-    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % access_token
+    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s'\
+          % access_token
     h = httplib2.Http()
     result = h.request(url, 'GET')[0]
     print('result is ')
@@ -141,11 +150,13 @@ def gdisconnect():
         del login_session['username']
         del login_session['email']
         del login_session['picture']
-        response = make_response(json.dumps('Successfully disconnected.'), 200)
+        response = make_response(json.dumps(
+            'Successfully disconnected.'), 200)
         response.headers['Content-Type'] = 'application/json'
         return response
     else:
-        response = make_response(json.dumps('Failed to revoke token for given user.'), 400)
+        response = make_response(json.dumps(
+            'Failed to revoke token for given user.'), 400)
         response.headers['Content-Type'] = 'application/json'
         return response
 
@@ -171,7 +182,8 @@ def add_category():
     if 'username' not in login_session:
         return redirect(url_for('show_login'))
     if request.method == 'POST':
-        new_category = Category(category_name=request.form['category_name'], user_id=login_session['user_id'])
+        new_category = Category(category_name=request.form['category_name'],
+                                user_id=login_session['user_id'])
         session.add(new_category)
         flash('Category was successfully created', 'success')
         session.commit()
@@ -183,24 +195,32 @@ def add_category():
 # return 'list of all the classes in the catalog category'
 @app.route('/categories/<category_name>')
 def class_list(category_name):
-    category = session.query(Category).filter_by(category_name=category_name).one()
-    classes = session.query(ClassName).filter_by(category_id=category.id).all()
+    category = session.query(Category).filter_by(
+        category_name=category_name).one()
+    classes = session.query(ClassName).filter_by(
+        category_id=category.id).all()
     creator = get_user_info(category.user_id)
     if 'username' not in login_session:
-        return render_template('public_classes.html', category=category, classes=classes, creator=creator)
+        return render_template('public_classes.html', category=category,
+                               classes=classes, creator=creator)
     else:
-        return render_template('classes.html',  category=category, classes=classes)
+        return render_template('classes.html',  category=category,
+                               classes=classes)
 
 
 # function to add a class to database
-@app.route('/categories/<category_name>/new', methods=['GET', 'POST'])
+@app.route('/categories/<category_name>/new',
+           methods=['GET', 'POST'])
 def add_class(category_name):
-    category = session.query(Category).filter_by(category_name=category_name).one()
+    category = session.query(Category).filter_by(
+        category_name=category_name).one()
     if 'username' not in login_session:
         return redirect(url_for('show_login'))
     if request.method == 'POST':
-        new_class = ClassName(class_name=request.form['class_name'], category_id=category.id,
-                              description=request.form['description'], user_id=login_session['user_id'])
+        new_class = ClassName(class_name=request.form['class_name'],
+                              category_id=category.id,
+                              description=request.form['description'],
+                              user_id=login_session['user_id'])
         session.add(new_class)
         flash('Class was succesfully added', 'success')
         session.commit()
@@ -211,11 +231,14 @@ def add_class(category_name):
 
 
 # allows edit class functionality to logged in users
-@app.route('/categories/<category_name>/<int:class_id>/edit', methods=['GET', 'POST'])
+@app.route('/categories/<category_name>/<int:class_id>/edit',
+           methods=['GET', 'POST'])
 def edit_class(category_name, class_id):
     edited_class = session.query(ClassName).filter_by(id=class_id).one()
-    category = session.query(Category).filter_by(category_name=category_name).one()
-    classes = session.query(ClassName).filter_by(category_id=category.id).all()
+    category = session.query(Category).filter_by(
+        category_name=category_name).one()
+    classes = session.query(ClassName).filter_by(
+        category_id=category.id).all()
     if 'username' not in login_session:
         return redirect(url_for('show_login'))
     if request.method == 'POST':
@@ -228,13 +251,16 @@ def edit_class(category_name, class_id):
         return redirect(url_for('class_list', category_name=category_name))
     # return 'list of all the classes in the catalog category'
     else:
-        return render_template('editclass.html',  category=category, classes=classes, edit=edited_class)
+        return render_template('editclass.html',  category=category,
+                               classes=classes, edit=edited_class)
 
 
 # allows delete class functionality to logged in users
-@app.route('/categories/<category_name>/<int:class_id>/delete', methods=['GET', 'POST'])
+@app.route('/categories/<category_name>/<int:class_id>/delete',
+           methods=['GET', 'POST'])
 def delete_class(category_name, class_id):
-    category = session.query(Category).filter_by(category_name=category_name).one()
+    category = session.query(Category).filter_by(
+        category_name=category_name).one()
     del_class = session.query(ClassName).filter_by(id=class_id).one()
     if 'username' not in login_session:
         return redirect(url_for('show_login'))
@@ -243,20 +269,24 @@ def delete_class(category_name, class_id):
         session.commit()
         return redirect(url_for('class_list', category_name=category_name))
     else:
-        return render_template('deleteclass.html',  category=category, item=del_class)
+        return render_template('deleteclass.html',
+                               category=category, item=del_class)
 
 
 # displays the description of specified class
 @app.route('/categories/<category_name>/<int:class_id>')
 def class_description(category_name, class_id):
 
-    category = session.query(Category).filter_by(category_name=category_name).one()
+    category = session.query(Category).filter_by(
+        category_name=category_name).one()
     item = session.query(ClassName).filter_by(id=class_id).one()
     creator = get_user_info(item.user_id)
     print(creator)
     if 'username' not in login_session:
-        return render_template('publicclassdescription.html', category=category, item=item, creator=creator)
-    return render_template('class_description.html', category=category, item=item, creator=creator)
+        return render_template('publicclassdescription.html', category=category,
+                               item=item, creator=creator)
+    return render_template('class_description.html',
+                           category=category, item=item, creator=creator)
 
 
 # API endpoints for classes and categories
@@ -282,10 +312,13 @@ def all_classJSON():
 
 # function that creates users
 def create_user(login_session):
-    new_user = User(name=login_session['username'], email=login_session["email"], picture=login_session['picture'])
+    new_user = User(name=login_session['username'],
+                    email=login_session["email"],
+                    picture=login_session['picture'])
     session.add(new_user)
     session.commit()
-    user = session.query(User).filter_by(email=login_session['email']).one()
+    user = session.query(User).filter_by(
+        email=login_session['email']).one()
     return user.id
 
 
@@ -305,5 +338,5 @@ def get_user_id(email):
 if __name__ == '__main__':
     app.secret_key = 'secretKey'
     app.debug = True
-    app.run(host='0.0.0.0', port=8000)
+    app.run(host='0.0.0.0', port=5000)
 
