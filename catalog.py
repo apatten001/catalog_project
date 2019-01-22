@@ -240,11 +240,12 @@ def add_class(category_name):
            methods=['GET', 'POST'])
 def edit_class(category_name, class_id):
     edited_class = session.query(ClassName).filter_by(id=class_id).one()
+    creator = get_user_info(edited_class.user_id)
     category = session.query(Category).filter_by(
         category_name=category_name).one()
     classes = session.query(ClassName).filter_by(
         category_id=category.id).all()
-    if 'username' not in login_session:
+    if creator.email != login_session['email']:
         return redirect(url_for('show_login'))
     if request.method == 'POST':
         if request.form['class_name']:
